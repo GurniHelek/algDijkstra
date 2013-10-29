@@ -134,7 +134,6 @@ int main()
 {
     Graph g = Graph(3);
     g.addEdge(1, 2, 13);
-    g.addEdge(2, 1, 6);
     g.addEdge(2, 3, 6);
 
     g.showGraph();
