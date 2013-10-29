@@ -99,9 +99,13 @@ bool Graph::addEdge(int x, int y, int distance)
         return true;
     }
 
-    graphContainer::iterator node = graph.find(x);
-    edge newEdge = {y, distance, false};
-    node->second.push_back(newEdge);
+    graphContainer::iterator nodeY = graph.find(x);
+    edge newEdgeY = {y, distance, false};
+    nodeY->second.push_back(newEdgeY);
+
+    graphContainer::iterator nodeX = graph.find(y);
+    edge newEdgeX = {x, distance, false};
+    nodeX->second.push_back(newEdgeX);
 
     return true;
 }
@@ -113,7 +117,7 @@ void Graph::showGraph()
         for (edgeContatiner::iterator edges = iter->second.begin();
              edges != iter->second.end();
              edges++) {
-            std::cout << " ->" << (*edges).vertex << " (" << (*edges).distance << ")";
+            std::cout << " -> " << (*edges).vertex << " (" << (*edges).distance << ")";
         }
         std::cout << std::endl;
     }
@@ -128,7 +132,11 @@ void Graph::makeRandomGraph(int density, int minDistance, int maxDistance)
 
 int main()
 {
-    Graph g = Graph(2);
+    Graph g = Graph(3);
+    g.addEdge(1, 2, 13);
+    g.addEdge(2, 1, 6);
+    g.addEdge(2, 3, 6);
+
     g.showGraph();
 
     return 0;
