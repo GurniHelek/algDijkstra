@@ -1,6 +1,6 @@
 #include <iostream>
-#include <set>
 #include <map>
+#include <list>
 
 typedef struct edge_st
 {
@@ -9,7 +9,8 @@ typedef struct edge_st
     bool    isVisited;
 } edge;
 
-typedef std::map< int, std::set<edge> > graphContainer;
+typedef std::list<edge> edgeContatiner;
+typedef std::map< int, edgeContatiner > graphContainer;
 
 class Graph
 {
@@ -26,8 +27,9 @@ public:
     int getNumberOfEdges();
     graphContainer getGraph();
     bool isAdjacent(int x, int y);
-    bool addEdge(int x, int y);
+    bool addEdge(int x, int y, int distance);
     void makeRandomGraph(int density, int minDistance, int maxDistance);
+    void showGraph();
 };
 
 Graph::Graph()
@@ -41,8 +43,8 @@ Graph::Graph(int aNumberOfVertices)
     numberOfVertices = aNumberOfVertices;
 
     for (int i = 1; i <= numberOfVertices; i++) {
-        std::set<edge> edges;
-        graph.insert(std::pair< int, std::set<edge> >(i, edges));
+        edgeContatiner edges;
+        graph.insert(std::pair< int, edgeContatiner >(i, edges));
     }
 }
 
@@ -63,12 +65,21 @@ graphContainer Graph::getGraph()
 
 bool Graph::isAdjacent(int x, int y)
 {
-    if (x < 0 || x > numberOfVertices &&
-        y < 0 || y > numberOfVertices) {
+    if ((x < 1 || x > numberOfVertices) &&
+        (y < 1 || y > numberOfVertices)) {
         return false;
     }
     graphContainer::iterator node = graph.find(x);
 
+    for (edgeContatiner::iterator edges = node->second.begin();
+         edges != node->second.end();
+         edges++) {
+        if ((*edges).vertex == y) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /**
@@ -77,14 +88,35 @@ bool Graph::isAdjacent(int x, int y)
  * @param y - second node to be connected
  * @return true if this node was successfully connetced, false otherwise
  */
-bool Graph::addEdge(int x, int y)
+bool Graph::addEdge(int x, int y, int distance)
 {
-    if (x < 0 || x > numberOfVertices &&
-        y < 0 || y > numberOfVertices) {
+    if ((x < 1 || x > numberOfVertices) &&
+        (y < 1 || y > numberOfVertices)) {
         return false;
     }
-    graphContainer::iterator node = graph.find(x);
 
+    if (isAdjacent(x, y)) {
+        return true;
+    }
+
+    graphContainer::iterator node = graph.find(x);
+    edge newEdge = {y, distance, false};
+    node->second.push_back(newEdge);
+
+    return true;
+}
+
+void Graph::showGraph()
+{
+    for (graphContainer::iterator iter = graph.begin(); iter != graph.end(); ++iter) {
+        std::cout << (*iter).first;
+        for (edgeContatiner::iterator edges = iter->second.begin();
+             edges != iter->second.end();
+             edges++) {
+            std::cout << " ->" << (*edges).vertex << " (" << (*edges).distance << ")";
+        }
+        std::cout << std::endl;
+    }
 }
 
 void Graph::makeRandomGraph(int density, int minDistance, int maxDistance)
@@ -96,7 +128,8 @@ void Graph::makeRandomGraph(int density, int minDistance, int maxDistance)
 
 int main()
 {
-
+    Graph g = Graph(2);
+    g.showGraph();
 
     return 0;
 }
