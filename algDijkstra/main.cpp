@@ -1,11 +1,13 @@
 #include <iostream>
 #include <map>
 #include <list>
+#include <cstdlib>
+#include <ctime>
 
 const int MIN_DENSITY   = 0;
 const int MAX_DENSITY   = 100;
 const int MIN_DISTANCE  = 1;
-const int MAX_DISTANCE  = 100;
+const int MAX_DISTANCE  = 10;
 
 typedef struct edge_st
 {
@@ -17,6 +19,20 @@ typedef struct edge_st
 typedef std::list<edge> edgeContatiner;
 typedef std::map< int, edgeContatiner > graphContainer;
 
+/**
+ * @brief getRandNumber - get random integer in range
+ * @param min - min number in range
+ * @param max - max number in range
+ * @return
+ */
+inline int getRandNumber(int min, int max)
+{
+    return min + (rand() % (int)(max - min + 1));
+}
+
+/**
+ * @brief The Graph class - implementation of graph
+ */
 class Graph
 {
 private:
@@ -36,19 +52,26 @@ public:
     bool addEdge(int x, int y, int distance);
     bool addVertex(int x);
     bool deleteEdge(int x, int y);
-    void makeRandomGraph(int density, int minDistance, int maxDistance);
     void showGraph();
+    void makeRandomGraph(int density, int minDistance, int maxDistance);
 };
 
+/**
+ * @brief Graph::Graph - default constructor that creates empty graph
+ */
 Graph::Graph()
 {
     numberOfVertices = 0;
     numberOfEdges    = 0;
 }
 
-Graph::Graph(int aNumberOfVertices)
+/**
+ * @brief Graph::Graph - constructor that creates graph with N unconnected vertices
+ * @param N - number of vertices in graph
+ */
+Graph::Graph(int N)
 {
-    numberOfVertices = aNumberOfVertices;
+    numberOfVertices = N;
     numberOfEdges    = 0;
 
     for (int i = 1; i <= numberOfVertices; i++) {
@@ -57,21 +80,59 @@ Graph::Graph(int aNumberOfVertices)
     }
 }
 
+/**
+ * @brief Graph::getNumberOfEdges
+ * @return number of edges in graph
+ */
 int Graph::getNumberOfEdges()
 {
     return numberOfEdges;
 }
 
+/**
+ * @brief Graph::getNumberOfVertices
+ * @return number of vertices in graph
+ */
 int Graph::getNumberOfVertices()
 {
     return numberOfVertices;
 }
 
+/**
+ * @brief Graph::getGraph
+ * @return current graph
+ */
 graphContainer Graph::getGraph()
 {
     return graph;
 }
 
+/**
+ * @brief Graph::getEdges - get list with neighbors of node x
+ * @param x - node x
+ * @return
+ */
+edgeContatiner::iterator Graph::getEdges(int x)
+{
+    edgeContatiner::iterator neighbors;
+
+    if (x < 1 || x > numberOfVertices) {
+        return neighbors;
+    }
+
+    graphContainer::iterator node = graph.find(x);
+
+    neighbors = node->second.begin();
+
+    return neighbors;
+}
+
+/**
+ * @brief Graph::isAdjacent - tests whether there is an edge from node x to node y
+ * @param x - node x
+ * @param y - node y
+ * @return true if there is an edge from node x to node y, otherwise false
+ */
 bool Graph::isAdjacent(int x, int y)
 {
     if ((x < 1 || x > numberOfVertices) ||
@@ -91,6 +152,11 @@ bool Graph::isAdjacent(int x, int y)
     return false;
 }
 
+/**
+ * @brief Graph::addVertex - adds node to graph if it is not there
+ * @param x - node x
+ * @return true if new node was added, otherwise false
+ */
 bool Graph::addVertex(int x)
 {
     if (x <= numberOfVertices) {
@@ -104,30 +170,16 @@ bool Graph::addVertex(int x)
     return true;
 }
 
-edgeContatiner::iterator Graph::getEdges(int x)
-{
-    edgeContatiner::iterator neighbors;
-
-    if (x < 1 || x > numberOfVertices) {
-        return neighbors;
-    }
-
-    graphContainer::iterator node = graph.find(x);
-
-    neighbors = node->second.begin();
-
-    return neighbors;
-}
-
 /**
- * @brief Graph::addEdge
+ * @brief Graph::addEdge - adds to graph the edge from x to y, if it is not there.
  * @param x - first node to be connected
  * @param y - second node to be connected
- * @return true if this node was successfully connetced, false otherwise
+ * @param distance - distance between nodes
+ * @return true if this node was successfully connetced, otherwise false
  */
 bool Graph::addEdge(int x, int y, int distance)
 {
-    if (x < 1 || y < 1) {
+    if ((x < 1 || y < 1) || (x == y)) {
         return false;
     }
 
@@ -160,6 +212,12 @@ bool Graph::addEdge(int x, int y, int distance)
     return true;
 }
 
+/**
+ * @brief Graph::deleteEdge - removes the edge from x to y, if it is there.
+ * @param x - node x
+ * @param y - node y
+ * @return true if edge was successfully removed, otherwise false
+ */
 bool Graph::deleteEdge(int x, int y)
 {
     if ((x < 1 || x > numberOfVertices) ||
@@ -195,7 +253,9 @@ bool Graph::deleteEdge(int x, int y)
 
     return true;
 }
-
+/**
+ * @brief Graph::showGraph - print graph
+ */
 void Graph::showGraph()
 {
     for (graphContainer::iterator iter = graph.begin(); iter != graph.end(); ++iter) {
@@ -209,8 +269,12 @@ void Graph::showGraph()
     }
 }
 
-//        output = min + (rand() % (int)(max - min + 1))
-
+/**
+ * @brief Graph::makeRandomGraph - randomly add edges with random distance in graph
+ * @param density - edge density
+ * @param minDistance - min allowed distance
+ * @param maxDistance - max allowed distance
+ */
 void Graph::makeRandomGraph(int density, int minDistance, int maxDistance)
 {
     if (density > MAX_DENSITY || density < MIN_DENSITY) {
@@ -232,44 +296,33 @@ void Graph::makeRandomGraph(int density, int minDistance, int maxDistance)
     }
 
     for (graphContainer::iterator iter = graph.begin(); iter != graph.end(); ++iter) {
-
-
+        int probability = getRandNumber(MIN_DENSITY, MAX_DENSITY);
+        for (int i = (*iter).first; i <= numberOfVertices; i++) {
+            if (probability < density) {
+                this->addEdge((*iter).first,
+                              i,
+                              getRandNumber(minDistance, maxDistance));
+            }
+        }
     }
 }
 
 int main()
 {
-/*
-    Graph g = Graph(4);
+    srand (time(NULL));
 
+    int tmp;
+    Graph rg = Graph(50);
 
-    g.addEdge(1, 2, 13);
-    g.addEdge(2, 3, 6);
-    g.addEdge(5, 3, 6);
-    g.addEdge(1, 4, 6);
-    g.addEdge(1, 3, 6);
-    std::cout << "Number of v : " << g.getNumberOfVertices() << std::endl;
-    std::cout << "Number of e : " << g.getNumberOfEdges() << std::endl;
-
-//    g.makeRandomGraph();
-
-    g.showGraph();
-
-    g.deleteEdge(1, 2);
-
-    std::cout << "Number of v : " << g.getNumberOfVertices() << std::endl;
-    std::cout << "Number of e : " << g.getNumberOfEdges() << std::endl;
-    g.showGraph();
-*/
-    Graph rg = Graph();
-
-    rg.makeRandomGraph(10, 1, 5);
+    rg.makeRandomGraph(40, 1, 10);
 
     std::cout << "Number of v : " << rg.getNumberOfVertices() << std::endl;
     std::cout << "Number of e : " << rg.getNumberOfEdges() << std::endl;
     rg.showGraph();
 
     std::cout << "END \n";
+
+    std::cin >> tmp;
 
     return 0;
 }
