@@ -3,6 +3,8 @@
 #include <list>
 #include <cstdlib>
 #include <ctime>
+#include <vector>
+#include <climits>
 
 const int MIN_DENSITY   = 0;
 const int MAX_DENSITY   = 100;
@@ -47,7 +49,8 @@ public:
     int getNumberOfVertices();
     int getNumberOfEdges();
     graphContainer getGraph();
-    edgeContatiner::iterator getEdges(int x);
+    edgeContatiner::iterator getNeighbors(int x);
+    bool getEdge(edge& e, int x, int y);
     bool isAdjacent(int x, int y);
     bool addEdge(int x, int y, int distance);
     bool addVertex(int x);
@@ -108,11 +111,11 @@ graphContainer Graph::getGraph()
 }
 
 /**
- * @brief Graph::getEdges - get list with neighbors of node x
+ * @brief Graph::getNeighbors - get list with neighbors of node x
  * @param x - node x
  * @return
  */
-edgeContatiner::iterator Graph::getEdges(int x)
+edgeContatiner::iterator Graph::getNeighbors(int x)
 {
     edgeContatiner::iterator neighbors;
 
@@ -125,6 +128,32 @@ edgeContatiner::iterator Graph::getEdges(int x)
     neighbors = node->second.begin();
 
     return neighbors;
+}
+
+/**
+ * @brief Graph::getEdge - get edge between nodes x and y if exist
+ * @param e - edge container
+ * @param x - node x
+ * @param y - node y
+ * @return true if edge exist, otherwise false
+ */
+bool Graph::getEdge(edge& e, int x, int y)
+{
+    if (!isAdjacent(x, y)) {
+        return false;
+    }
+
+    graphContainer::iterator node = graph.find(x);
+
+    for (edgeContatiner::iterator edges = node->second.begin();
+         edges != node->second.end();
+         edges++) {
+        if ((*edges).vertex == y) {
+            e = *edges;
+            return true;
+        }
+    }
+    return true;
 }
 
 /**
@@ -307,11 +336,52 @@ void Graph::makeRandomGraph(int density, int minDistance, int maxDistance)
     }
 }
 
+void shortPath(Graph g, int start, int end)
+{
+    int num = g.getNumberOfVertices()+1;
+    int i, u, index, count;
+    std::vector<int>  distances(num, INT_MAX);
+    std::vector<bool> visited(num, false);
+
+    distances[start] = 0;
+
+    for (count=0; count<num-1; count++)
+    {
+        int min = INT_MAX;
+        for (i=0; i < num; i++)
+        if (!visited[i] && distances[i] <= min)
+        {
+            min = distances[i];
+            index = i;
+        }
+        u = index;
+        visited[u] = true;
+        for (i=0; i < num; i++) {
+
+        edge e;
+        g.getEdge(e, u, i);
+
+        if (!visited[i] && g.isAdjacent(u, i) &&
+            distances[u] != INT_MAX &&
+            distances[u] + e.distance < distances[i] )
+            distances[i]=distances[u] + e.distance;
+        }
+    }
+
+    std::cout<<"Стоимость пути из начальной вершины до остальных:\t\n";
+    int m = start;
+    for (i=0; i<num; i++) if (distances[i]!=INT_MAX)
+    std::cout<<m<<" > "<<i+1<<" = "<<distances[i]<<std::endl;
+    else std::cout<<m<<" > "<<i+1<<" = "<<"маршрут недоступен"<<std::endl;
+}
+
+
 int main()
 {
     srand (time(NULL));
 
-    int tmp;
+
+    /*
     Graph rg = Graph(50);
 
     rg.makeRandomGraph(40, 1, 10);
@@ -319,10 +389,22 @@ int main()
     std::cout << "Number of v : " << rg.getNumberOfVertices() << std::endl;
     std::cout << "Number of e : " << rg.getNumberOfEdges() << std::endl;
     rg.showGraph();
+*/
+
+    Graph rg = Graph(5);
+
+    rg.addEdge(1, 2, 4);
+    rg.addEdge(4, 2, 5);
+
+    edge e;
+    if (rg.getEdge(e, 2, 1)) {
+        std::cout << "\n\n e : " << e.distance << std::endl;
+    }
 
     std::cout << "END \n";
 
-    std::cin >> tmp;
+
+    shortPath(rg, 1, 5);
 
     return 0;
 }
