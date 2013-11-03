@@ -1,7 +1,9 @@
 #include <iostream>
 #include <map>
+#include <set>
 #include <list>
 #include <cstdlib>
+#include <cstdio>
 #include <ctime>
 #include <vector>
 #include <climits>
@@ -18,8 +20,9 @@ typedef struct edge_st
     bool    isVisited;
 } edge;
 
-typedef std::list<edge> edgeContatiner;
-typedef std::map< int, edgeContatiner > graphContainer;
+typedef std::list<edge>         edge_t;
+typedef std::map< int, edge_t > graph_t;
+typedef std::vector<int>        path_t;
 
 /**
  * @brief getRandNumber - get random integer in range
@@ -40,7 +43,7 @@ class Graph
 private:
     int             numberOfVertices;
     int             numberOfEdges;
-    graphContainer  graph;
+    graph_t  graph;
 
 public:
     Graph();
@@ -48,8 +51,8 @@ public:
 
     int getNumberOfVertices();
     int getNumberOfEdges();
-    graphContainer getGraph();
-    edgeContatiner::iterator getNeighbors(int x);
+    graph_t getGraph();
+    edge_t getNeighbors(int x);
     bool getEdge(edge& e, int x, int y);
     bool isAdjacent(int x, int y);
     bool addEdge(int x, int y, int distance);
@@ -78,8 +81,8 @@ Graph::Graph(int N)
     numberOfEdges    = 0;
 
     for (int i = 1; i <= numberOfVertices; i++) {
-        edgeContatiner edges;
-        graph.insert(std::pair< int, edgeContatiner >(i, edges));
+        edge_t edges;
+        graph.insert(std::pair< int, edge_t >(i, edges));
     }
 }
 
@@ -105,7 +108,7 @@ int Graph::getNumberOfVertices()
  * @brief Graph::getGraph
  * @return current graph
  */
-graphContainer Graph::getGraph()
+graph_t Graph::getGraph()
 {
     return graph;
 }
@@ -115,19 +118,19 @@ graphContainer Graph::getGraph()
  * @param x - node x
  * @return
  */
-edgeContatiner::iterator Graph::getNeighbors(int x)
+edge_t Graph::getNeighbors(int x)
 {
-    edgeContatiner::iterator neighbors;
+    edge_t neighbors;
 
     if (x < 1 || x > numberOfVertices) {
         return neighbors;
     }
 
-    graphContainer::iterator node = graph.find(x);
+    graph_t::iterator node = graph.find(x);
 
-    neighbors = node->second.begin();
+//    neighbors = node->second;
 
-    return neighbors;
+    return node->second;;
 }
 
 /**
@@ -143,9 +146,9 @@ bool Graph::getEdge(edge& e, int x, int y)
         return false;
     }
 
-    graphContainer::iterator node = graph.find(x);
+    graph_t::iterator node = graph.find(x);
 
-    for (edgeContatiner::iterator edges = node->second.begin();
+    for (edge_t::iterator edges = node->second.begin();
          edges != node->second.end();
          edges++) {
         if ((*edges).vertex == y) {
@@ -168,9 +171,9 @@ bool Graph::isAdjacent(int x, int y)
         (y < 1 || y > numberOfVertices)) {
         return false;
     }
-    graphContainer::iterator node = graph.find(x);
+    graph_t::iterator node = graph.find(x);
 
-    for (edgeContatiner::iterator edges = node->second.begin();
+    for (edge_t::iterator edges = node->second.begin();
          edges != node->second.end();
          edges++) {
         if ((*edges).vertex == y) {
@@ -192,8 +195,8 @@ bool Graph::addVertex(int x)
         return false;
     }
 
-    edgeContatiner edges;
-    graph.insert(std::pair< int, edgeContatiner >(x, edges));
+    edge_t edges;
+    graph.insert(std::pair< int, edge_t >(x, edges));
     numberOfVertices++;
 
     return true;
@@ -228,11 +231,11 @@ bool Graph::addEdge(int x, int y, int distance)
         return true;
     }
 
-    graphContainer::iterator nodeY = graph.find(x);
+    graph_t::iterator nodeY = graph.find(x);
     edge newEdgeY = {y, distance, false};
     nodeY->second.push_back(newEdgeY);
 
-    graphContainer::iterator nodeX = graph.find(y);
+    graph_t::iterator nodeX = graph.find(y);
     edge newEdgeX = {x, distance, false};
     nodeX->second.push_back(newEdgeX);
 
@@ -258,8 +261,8 @@ bool Graph::deleteEdge(int x, int y)
         return true;
     }
 
-    graphContainer::iterator nodeX = graph.find(x);
-    for (edgeContatiner::iterator edgesX = nodeX->second.begin();
+    graph_t::iterator nodeX = graph.find(x);
+    for (edge_t::iterator edgesX = nodeX->second.begin();
          edgesX != nodeX->second.end();
          edgesX++) {
         if ((*edgesX).vertex == y) {
@@ -268,8 +271,8 @@ bool Graph::deleteEdge(int x, int y)
         }
     }
 
-    graphContainer::iterator nodeY = graph.find(y);
-    for (edgeContatiner::iterator edgesY = nodeY->second.begin();
+    graph_t::iterator nodeY = graph.find(y);
+    for (edge_t::iterator edgesY = nodeY->second.begin();
          edgesY != nodeY->second.end();
          edgesY++) {
         if ((*edgesY).vertex == x) {
@@ -287,9 +290,9 @@ bool Graph::deleteEdge(int x, int y)
  */
 void Graph::showGraph()
 {
-    for (graphContainer::iterator iter = graph.begin(); iter != graph.end(); ++iter) {
+    for (graph_t::iterator iter = graph.begin(); iter != graph.end(); ++iter) {
         std::cout << (*iter).first;
-        for (edgeContatiner::iterator edges = iter->second.begin();
+        for (edge_t::iterator edges = iter->second.begin();
              edges != iter->second.end();
              edges++) {
             std::cout << " -> " << (*edges).vertex << " (" << (*edges).distance << ")";
@@ -324,7 +327,7 @@ void Graph::makeRandomGraph(int density, int minDistance, int maxDistance)
         maxDistance = MAX_DISTANCE;
     }
 
-    for (graphContainer::iterator iter = graph.begin(); iter != graph.end(); ++iter) {
+    for (graph_t::iterator iter = graph.begin(); iter != graph.end(); ++iter) {
         int probability = getRandNumber(MIN_DENSITY, MAX_DENSITY);
         for (int i = (*iter).first; i <= numberOfVertices; i++) {
             if (probability < density) {
@@ -336,52 +339,94 @@ void Graph::makeRandomGraph(int density, int minDistance, int maxDistance)
     }
 }
 
-void shortPath(Graph g, int start, int end)
+class ShortestPath
 {
-    int num = g.getNumberOfVertices()+1;
-    int i, u, index, count;
-    std::vector<int>  distances(num, INT_MAX);
-    std::vector<bool> visited(num, false);
+private:
+    path_t  shortestPath;
+    path_t  minDistance;
+    path_t  previous;
 
-    distances[start] = 0;
+public:
+    ShortestPath();
+    ShortestPath(Graph g, int start);
 
-    for (count=0; count<num-1; count++)
-    {
-        int min = INT_MAX;
-        for (i=0; i < num; i++)
-        if (!visited[i] && distances[i] <= min)
-        {
-            min = distances[i];
-            index = i;
-        }
-        u = index;
-        visited[u] = true;
-        for (i=0; i < num; i++) {
+    int getPathSize(int end);
+    bool getPath(int end, path_t &path);
 
-        edge e;
-        g.getEdge(e, u, i);
+};
 
-        if (!visited[i] && g.isAdjacent(u, i) &&
-            distances[u] != INT_MAX &&
-            distances[u] + e.distance < distances[i] )
-            distances[i]=distances[u] + e.distance;
+ShortestPath::ShortestPath(Graph g, int start)
+{
+    int n = g.getNumberOfVertices();
+    int startIndex = start - 1;
+    std::set< std::pair<int, int> > vertexQueue;
+
+    previous.clear();
+    minDistance.clear();
+    previous.resize(n, -1);
+    minDistance.resize(n, INT_MAX);
+
+    minDistance[startIndex] = 0;
+    vertexQueue.insert(std::make_pair(minDistance[startIndex], startIndex));
+
+    while (!vertexQueue.empty()) {
+
+        int dist = vertexQueue.begin()->first;
+        int u    = vertexQueue.begin()->second;
+        vertexQueue.erase(vertexQueue.begin());
+
+        edge_t neibourghs = g.getNeighbors(u + 1);
+        edge_t::iterator neighborIter = neibourghs.begin();
+
+        for (int i = 0; i < neibourghs.size(); i++) {
+
+            int v      = neighborIter->vertex - 1;
+            int weight = neighborIter->distance;
+            int cost   = dist + weight;
+
+            if (cost < minDistance[v]) {
+                vertexQueue.erase(std::make_pair(minDistance[v], v));
+                minDistance[v] = cost;
+                previous[v] = u;
+                vertexQueue.insert(std::make_pair(minDistance[v], v));
+            }
+            neighborIter++;
         }
     }
-
-    std::cout<<"Стоимость пути из начальной вершины до остальных:\t\n";
-    int m = start;
-    for (i=0; i<num; i++) if (distances[i]!=INT_MAX)
-    std::cout<<m<<" > "<<i+1<<" = "<<distances[i]<<std::endl;
-    else std::cout<<m<<" > "<<i+1<<" = "<<"маршрут недоступен"<<std::endl;
 }
 
+bool ShortestPath::getPath(int end, path_t &path)
+{
+    std::list<int> edges;
+    bool isPath  = false;
+    int endIndex = end - 1;
+
+    for ( ; endIndex != -1; endIndex = previous[endIndex]) {
+        edges.push_front(endIndex + 1);
+    }
+
+    for (std::list<int>::iterator it = edges.begin();
+         it != edges.end();
+         it++) {
+
+        path.push_back(*it);
+        isPath  = true;
+    }
+
+    return isPath;
+}
+
+int ShortestPath::getPathSize(int end)
+{
+    return (minDistance[end - 1] == INT_MAX) ? 0 : minDistance[end - 1];
+}
 
 int main()
 {
     srand (time(NULL));
 
 
-    /*
+
     Graph rg = Graph(50);
 
     rg.makeRandomGraph(40, 1, 10);
@@ -389,22 +434,31 @@ int main()
     std::cout << "Number of v : " << rg.getNumberOfVertices() << std::endl;
     std::cout << "Number of e : " << rg.getNumberOfEdges() << std::endl;
     rg.showGraph();
-*/
 
+/*
     Graph rg = Graph(5);
 
     rg.addEdge(1, 2, 4);
-    rg.addEdge(4, 2, 5);
+    rg.addEdge(1, 3, 5);
+    rg.addEdge(1, 4, 10);
+    rg.addEdge(5, 2, 4);
+    rg.addEdge(5, 3, 5);
+*/
 
-    edge e;
-    if (rg.getEdge(e, 2, 1)) {
-        std::cout << "\n\n e : " << e.distance << std::endl;
+
+    ShortestPath p = ShortestPath(rg, 1);
+    path_t path;
+    int end = 41;
+
+    p.getPath(end, path);
+    std::cout << "Path : [" << p.getPathSize(end) << "] ";
+    for (path_t::iterator it = path.begin(); it != path.end(); it++)
+    {
+        std::cout << *it << " -> " ;
     }
+    std::cout << std::endl;
 
     std::cout << "END \n";
-
-
-    shortPath(rg, 1, 5);
 
     return 0;
 }
