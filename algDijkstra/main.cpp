@@ -4,6 +4,7 @@
 
 #include "graph.h"
 #include "shortestpath.h"
+#include "mst.h"
 
 /**
  * @brief test - average path length calculation
@@ -54,7 +55,10 @@ int main()
     const char* filename = "../SampleTestData_mst_data.txt";
     Graph g = Graph(filename);
     std::cout << "TT " << g.getNumberOfVertices() << std::endl;
-    g.showGraph();
+
+    MST mst = MST(g);
+
+    std::cout << "The cost of minimum spanning tree is " << mst.getMstCost() << std::endl;
 
     return 0;
 }

@@ -21,7 +21,7 @@ const double INFINITY_VAL  = 4242.4242;    // to mark unvisited nodes
 typedef struct edge_st
 {
     int     vertex;
-    double   distance;
+    double  distance;
 } edge;
 
 typedef std::list<edge>         edge_t;

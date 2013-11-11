@@ -15,8 +15,10 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 
-SOURCES += main.cpp graph.cpp shortestpath.cpp
+SOURCES += main.cpp graph.cpp shortestpath.cpp \
+    mst.cpp
 
 HEADERS += \
     shortestpath.h \
-    graph.h
+    graph.h \
+    mst.h
