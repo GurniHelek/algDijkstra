@@ -50,5 +50,11 @@ int main()
               << " nodes and density " << density
               << " average path length is " << test(density, numberOfNodes) << std::endl;
 
+
+    const char* filename = "../SampleTestData_mst_data.txt";
+    Graph g = Graph(filename);
+    std::cout << "TT " << g.getNumberOfVertices() << std::endl;
+    g.showGraph();
+
     return 0;
 }

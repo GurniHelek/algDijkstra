@@ -3,7 +3,7 @@
 // *************************************************************************
 
 #include "graph.h"
-
+#include <sstream>
 /**
  * @brief getRandNumber - get random number in range
  * @param min - min number in range
@@ -38,6 +38,52 @@ Graph::Graph(int N)
         edge_t edges;
         graph.insert(std::pair< int, edge_t >(i, edges));
     }
+}
+
+std::vector<std::string>& Graph::split(const std::string &s, char delim, std::vector<std::string> &elems) {
+               std::stringstream ss(s);
+                std::string item;
+                while (std::getline(ss, item, delim)) {
+                             elems.push_back(item);
+                 }
+          return elems;
+}
+
+std::vector<std::string> Graph::split(const std::string &s, char delim) {
+        std::vector<std::string> elems;
+        split(s, delim, elems);
+        return elems;
+}
+
+Graph::Graph(const char* filename)
+{
+    std::string line;
+    std::ifstream file;
+    file.open(filename);
+
+    if (!file.is_open()) {
+        std::cout << "Opening file '" << filename << "' failed! \n";
+        return;
+    }
+
+    int counter = 0;
+    while (std::getline(file, line)) {
+
+        if (!counter) {
+            numberOfEdges    = 0;
+            numberOfVertices = 0;
+        }
+        else {
+            std::vector<std::string> strEdge = split(line, ' ');
+
+            addEdge(atoi(strEdge[0].c_str()) + 1,
+                    atoi(strEdge[1].c_str()) + 1,
+                    atoi(strEdge[2].c_str()));
+        }
+        counter++;
+    }
+
+    file.close();
 }
 
 /**

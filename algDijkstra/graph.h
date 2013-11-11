@@ -2,6 +2,8 @@
 #define GRAPH_H
 
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <map>
 #include <set>
 #include <list>
@@ -13,7 +15,7 @@
 const double MIN_DENSITY   = 0.0;
 const double MAX_DENSITY   = 1.0;
 const double MIN_DISTANCE  = 1.0;
-const double MAX_DISTANCE  = 10.0;
+const double MAX_DISTANCE  = 100.0;
 const double INFINITY_VAL  = 4242.4242;    // to mark unvisited nodes
 
 typedef struct edge_st
@@ -33,13 +35,18 @@ typedef std::vector<double>     path_t;
 class Graph
 {
 private:
-    int             numberOfVertices;
-    int             numberOfEdges;
-    graph_t  graph;
+    int     numberOfVertices;
+    int     numberOfEdges;
+    graph_t graph;
+
+    // taken from here : http://stackoverflow.com/a/236803
+    std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
+    std::vector<std::string> split(const std::string &s, char delim);
 
 public:
     Graph();
     Graph(int numberOfVertices);
+    Graph(const char* filename);
 
     int getNumberOfVertices();
     int getNumberOfEdges();
